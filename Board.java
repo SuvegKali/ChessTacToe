@@ -27,48 +27,19 @@ public class Board {
         }
     }
 
-    public void placeAPiece(){
+    public void placeAPiece(Piece thisPiece, int a, int b){
 
-        //take user input for piece placement
-        System.out.println("Which piece ? 1 = ROOK   2 = KNIGHT   3 = PAWN");
-        int pieceInput =  scanner.nextInt();
-
-        System.out.println("Which color ? 1 = WHITE   2 = BLACK");
-        int colorInput =  scanner.nextInt();
-
-        System.out.println("Which row ? (0-3)");
-        int rowInput = scanner.nextInt();
-
-        System.out.println("Which column ? (0-3)");
-        int colInput = scanner.nextInt();
-
-        Piece pieceType;
-        if(pieceInput == 1){
-            pieceType = Piece.Type ROOK;
-        }
-        else if(pieceInput == 2){
-            pieceType = Piece.Type KNIGHT;
-        }
-        else if(pieceInput == 3){
-            pieceType = Piece.Type PAWN;
+        if(isStatusOkay(thisPiece) && isSquareValid(a,b) && isSquareEmpty(a,b)){
+            grid[a][b] = thisPiece;
+            thisPiece.status = Piece.Status.ON_BOARD;
         }
 
-        
-
-        int row = rowInput;
-        int col = colInput;
-        Piece piece = pieceType;
-        Piece color = colorType;
-        //checking for out of bounds squares
-        if(!((0<= row && row<=3) && (0<= col && col<=3))){
-            System.out.println("Squares are out of the board");
-        }
-        //checking for square being empty
-        if(grid[row][col] == null){
-            grid[row][col] =  new Piece(piece , color);
-        }
-        else{
-            System.out.println("Square is already occupied");
-        }
     }
+
+    public boolean isSquareValid(int row, int col){return ((0 <= row && row <= 3) && (0 <= col && col <= 3));}
+
+    public boolean isSquareEmpty(int row, int col){return (grid[row][col] == null);}
+
+    public boolean isStatusOkay(Piece thisPiece){return (thisPiece.status == Piece.Status.IN_LOBBY);}
+
 }

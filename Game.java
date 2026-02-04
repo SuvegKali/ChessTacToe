@@ -7,9 +7,9 @@ public class Game  {
 
     public  Game(){
         
-        this.board = new Board();    // creating a new empty board
-        this.whitePlayer = new Player(Piece.Color.WHITE);
-        this.blackPlayer = new Player(Piece.Color.BLACK);
+        board = new Board();    // creating a new empty board
+        whitePlayer = new Player(Piece.Color.WHITE);
+        blackPlayer = new Player(Piece.Color.BLACK);
 
     }
 
@@ -29,10 +29,12 @@ public class Game  {
     //     System.out.println()
     // }
 
+    
+
     public void play(){
         // helper();
         board.display();
-        board.placeAPiece();
+        
         board.display();
     }
 
