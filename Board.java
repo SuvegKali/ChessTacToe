@@ -1,4 +1,7 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+
 
 public class Board {
     Piece grid[][];
@@ -35,6 +38,21 @@ public class Board {
         }
 
     }
+
+    public List<int[]> getPiecePositionsByColor(Piece.Color color) {
+    List<int[]> positions = new ArrayList<>();
+    
+    for(int row = 0; row < 4; row++) {
+        for(int col = 0; col < 4; col++) {
+            Piece piece = grid[row][col];
+            if(piece != null && piece.color == color) {
+                positions.add(new int[]{row, col});
+            }
+        }
+    }
+    
+    return positions;
+}
 
     public boolean isSquareValid(int row, int col){return ((0 <= row && row <= 3) && (0 <= col && col <= 3));}
 
