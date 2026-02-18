@@ -114,8 +114,75 @@ public class Game  {
                 return true;
             }
         }
+        // checking for diagonal 
+        else if( (minRow + 1 == midRow && midRow + 1 == maxRow) && (minCol + 1 == midCol && midCol + 1 == maxCol) ){
+            return true;
+        }
         return false;
-        // else if ()
+        
+    }
+
+    public void moveAPiece(){
+        // taking user input ffor source coords
+        int srcRow, srcCol;
+        System.out.println("Enter the piece you wish to move");
+        System.out.println("Enter piece row");
+        srcRow = sc.nextInt();
+        System.out.println("Enter piece column");
+        srcCol = sc.nextInt();
+
+        // validating user input
+        // checking if piece coords are in range
+        if(! (board.isSquareValid(srcRow, srcCol))){
+            System.out.println("Piece coordinates out of range ");
+            return;
+        }
+
+        //checking if the entered cell is not empty
+        if((board.grid[srcRow][srcCol] == null)){
+            System.out.println("There exists no piece at the entered cell");
+            return;
+        }
+
+        //checking if piece belongs to the current player
+        Piece currentPiece = board.grid[srcRow][srcCol];
+        // if(!(currentPlayer == whitePlayer && currentPiece.color == Piece.Color.WHITE)){
+        //     System.out.println("Please select your piece 1");
+        // }
+        // else if(!(currentPlayer == blackPlayer && currentPiece.color == Piece.Color.BLACK)){
+        //     System.out.println("Please select your piece 2");
+        // }
+
+        // taking user input for destination coords
+        int dstRow, dstCol;
+        System.out.println("Enter the destination you want to move to");
+        System.out.println("Enter destination row");
+        dstRow = sc.nextInt();
+        System.out.println("Enter destination column");
+        dstCol = sc.nextInt();
+
+        //checking if destination coords are in range
+        if(!(board.isSquareValid(dstRow, dstCol))){
+            System.out.println("Please enter destination coords in range");
+            return;
+        }
+
+        // checking behaviour of pieces 
+        if(! board.validMove(srcRow,srcCol, dstRow, dstCol)){
+            System.out.println("This piece cannot move here as per the law of chess");
+            return;
+        }
+
+        if(board.grid[dstRow][dstCol] == null){
+            board.grid[dstRow][dstCol] = currentPiece;
+            board.grid[srcRow][srcCol] = null;
+        }
+        else{
+            board.grid[dstRow][dstCol].status = Piece.Status.IN_LOBBY;
+            board.grid[dstRow][dstCol] = currentPiece;
+            board.grid[srcRow][srcCol] = null;
+        }
+
     }
 
     public void play(){
@@ -127,8 +194,46 @@ public class Game  {
         board.display();
         piecePlacer();
         board.display();
-        
+        moveAPiece();
+        board.display();
     }
 
+    public boolean checkWin(Player tempPlayer){
+        Piece r,k,p;
+        
+        r = tempPlayer.rook; k = tempPlayer.knight; p = tempPlayer.pawn;
+        int rx, ry, kx, ky, px, py;
+        List<int[]> rCoords =  board.getPiecePositionsByColor(r.color); 
+        List<int[]> kCoords =  board.getPiecePositionsByColor(k.color); 
+        List<int[]> pCoords =  board.getPiecePositionsByColor(p.color); 
+
+        rx = rCoords.get(0)[0];
+        ry = rCoords.get(0)[1];
+        kx = kCoords.get(0)[0];
+        ky = kCoords.get(0)[1];
+        px = pCoords.get(0)[0];
+        py = pCoords.get(0)[1];
+
+        if(checkWinningCondition(rx,ry,kx,ky,px,py)){
+            return true;
+        }
+
+
+
+
+        return false;
+    }
+    //implementing game loop
+    // public void gameloop(){
+    //     while(!checkWin(currentPlayer)){
+
+    //         switchPlayer();
+    //     }
+    // }
+
+    // public void switchPlayer(){
+    //     if(currentPlayer == whitePlayer){ currentPlayer = blackPlayer ;}
+    //     else if(currentPlayer == blackPlayer){ currentPlayer = whitePlayer ;}
+    // }
     
 }

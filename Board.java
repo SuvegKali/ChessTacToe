@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
+import java.lang.Math;
 
 public class Board {
     Piece grid[][];
@@ -59,5 +59,39 @@ public class Board {
     public boolean isSquareEmpty(int row, int col){return (grid[row][col] == null);}
 
     public boolean isStatusOkay(Piece thisPiece){return (thisPiece.status == Piece.Status.IN_LOBBY);}
+
+    public boolean validMove(int srcRow, int srcCol, int dstRow, int dstCol){
+
+        Piece.Type pieceType;
+
+        pieceType = grid[srcRow][srcCol].type;
+        int rowDiff = dstRow - srcRow;
+        int colDiff = dstCol - srcCol;
+
+        if (pieceType == Piece.Type.ROOK){
+            if((((srcRow == dstRow) && (colDiff == 0)) || (srcCol == dstCol) && (rowDiff == 0))){
+                System.out.println("Rook cannot move here");
+                return false;
+            }
+            return true;
+            // obstruction checking will be implemented in the future. until then, the tester will have to make sure of no obstructions
+        }
+
+        if(pieceType == Piece.Type.KNIGHT){
+            if(!(((Math.abs(rowDiff) == 2) && (Math.abs(colDiff)==1)) || ((Math.abs(rowDiff)==1) && (Math.abs(colDiff)==2)))){
+                return false;
+            }
+            return true;
+        }
+
+        if(pieceType == Piece.Type.PAWN){
+            if(!(Math.abs(rowDiff) <= 1 && (Math.abs(colDiff) <= 1))){
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
 
 }
