@@ -94,4 +94,21 @@ public class Board {
         return false;
     }
 
+    public List<int[]> whitePieceList(){
+        // returns a list of all the pieces currently placed on the board by the white player (with coordinates)
+        List<int[]> whiteList = new ArrayList<>();
+
+        whiteList = getPiecePositionsByColor(Piece.Color.WHITE);
+
+        return whiteList;
+    }
+
+    public List<int[]> blackPieceList(){
+        // returns a list of all the pieces currently placed on the board by the white player (with coordinates)
+        List<int[]> blackList = new ArrayList<>();
+
+        blackList = getPiecePositionsByColor(Piece.Color.BLACK);
+
+        return blackList;
+    }
 }

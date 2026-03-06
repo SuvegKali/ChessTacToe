@@ -9,7 +9,10 @@ public class Game  {
     private Player whitePlayer;
     private Player blackPlayer;
     private Player currentPlayer;
+    int whitePiecesPlaced = 0;
+    int blackPiecesPlaced = 0;
     int piecesPlaced = 0;
+    int roundHelper = 0;
 
     public  Game(){
         
@@ -38,6 +41,12 @@ public class Game  {
     // }
 
     public void piecePlacer(){
+        if(currentPlayer == whitePlayer){
+            System.out.println("White");
+        }
+        else if(currentPlayer == blackPlayer){
+            System.out.println("Black");
+        }
         System.out.println("Which piece ? : 1 = ROOK, 2 = KNIGHT, 3 = PAWN");
         int pieceType = sc.nextInt();
         
@@ -61,34 +70,90 @@ public class Game  {
             return;
         }
 
-        if(piecesPlaced < 2){
-            board.placeAPiece(temp, pieceRow,pieceCol);
-            piecesPlaced++;
-        }
-        else{
-            
-            List<int[]> coordinates = board.getPiecePositionsByColor(currentPlayer.knight.color);
-            int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
-            
-            tempRX = coordinates.get(0)[0];
-            tempKX = coordinates.get(1)[0];
-            // tempPX = coordinates.get(2)[0];
-            tempRY = coordinates.get(0)[1];
-            tempKY = coordinates.get(1)[1];
-            // tempPY = coordinates.get(2)[1];
-            tempPX = pieceRow;
-            tempPY = pieceCol;
-
-
-
-            if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+        if(currentPlayer == whitePlayer){
+            if(whitePiecesPlaced < 2){
                 board.placeAPiece(temp, pieceRow, pieceCol);
+                whitePiecesPlaced++;
+            }
+            List<int[]> whiteCoordinates = board.whitePieceList();
+            if(whiteCoordinates.size() >= 2){
+                int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
 
+                tempRX = whiteCoordinates.get(0)[0];
+                tempKX = whiteCoordinates.get(1)[0];
+
+                tempRY = whiteCoordinates.get(0)[1];
+                tempKY = whiteCoordinates.get(1)[1];
+
+                tempPX = pieceRow;
+                tempPY = pieceCol;
+
+                if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+                    board.placeAPiece(temp, pieceRow, pieceCol);
+                } else {
+                    System.out.println("Cannot place here, game will end !");
+                }
             }
-            else{
-                System.out.println("Cannot place here, game will end !");
-            }
+            
         }
+        else if(currentPlayer == blackPlayer){
+            if(blackPiecesPlaced < 2){
+                board.placeAPiece(temp, pieceRow, pieceCol);
+                blackPiecesPlaced++;
+            }
+            List<int[]> blackCoordinates = board.blackPieceList();
+            if(blackCoordinates.size() >= 2){
+                int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
+            
+                tempRX = blackCoordinates.get(0)[0];
+                tempKX = blackCoordinates.get(1)[0];
+                // tempPX = blackCoordinates.get(2)[0];
+                tempRY = blackCoordinates.get(0)[1];
+                tempKY = blackCoordinates.get(1)[1];
+                // tempPY = whiteCoordinates.get(2)[1];
+                tempPX = pieceRow;
+                tempPY = pieceCol;
+                if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+                    board.placeAPiece(temp, pieceRow, pieceCol);
+
+                }
+                else{
+                    System.out.println("Cannot place here, game will end !");
+                }
+            }
+            
+            
+
+        }
+
+        // if(piecesPlaced < 2){
+        //     board.placeAPiece(temp, pieceRow,pieceCol);
+        //     piecesPlaced++;
+        // }
+        // else{
+            
+        //     List<int[]> coordinates = board.getPiecePositionsByColor(currentPlayer.knight.color);
+        //     int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
+            
+        //     tempRX = coordinates.get(0)[0];
+        //     tempKX = coordinates.get(1)[0];
+        //     // tempPX = coordinates.get(2)[0];
+        //     tempRY = coordinates.get(0)[1];
+        //     tempKY = coordinates.get(1)[1];
+        //     // tempPY = coordinates.get(2)[1];
+        //     tempPX = pieceRow;
+        //     tempPY = pieceCol;
+
+
+
+        //     if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+        //         board.placeAPiece(temp, pieceRow, pieceCol);
+
+        //     }
+        //     else{
+        //         System.out.println("Cannot place here, game will end !");
+        //     }
+        
         
         
 
@@ -186,13 +251,22 @@ public class Game  {
     }
 
     public void play(){
-        // helper();
+    //     // helper();
         board.display();
         piecePlacer();
+        switchPlayer();
         board.display();
         piecePlacer();
+        switchPlayer();
         board.display();
         piecePlacer();
+        switchPlayer();
+        board.display();
+        piecePlacer();
+        switchPlayer();
+        board.display();
+        piecePlacer();
+        switchPlayer();
         board.display();
         moveAPiece();
         board.display();
@@ -223,17 +297,40 @@ public class Game  {
 
         return false;
     }
-    //implementing game loop
-    // public void gameloop(){
-    //     while(!checkWin(currentPlayer)){
+    // implementing game loop
+    public void gameLoop(){
+        board.display();
+        if(!completedPlacementRound()){
+            placementRound();
+        }
+        while(!checkWin(currentPlayer)){
 
-    //         switchPlayer();
-    //     }
-    // }
+            switchPlayer();
+        }
+    }
 
-    // public void switchPlayer(){
-    //     if(currentPlayer == whitePlayer){ currentPlayer = blackPlayer ;}
-    //     else if(currentPlayer == blackPlayer){ currentPlayer = whitePlayer ;}
-    // }
+    public void switchPlayer(){
+        if(currentPlayer == whitePlayer){ currentPlayer = blackPlayer ;}
+        else if(currentPlayer == blackPlayer){ currentPlayer = whitePlayer ;}
+    }
     
+    public void placementRound(){
+        while(roundHelper < 5){
+            if(currentPlayer == whitePlayer){
+                System.out.println("White");
+            }
+            else if(currentPlayer == blackPlayer){
+                System.out.println("Black");
+            }
+            piecePlacer();
+            
+            
+            board.display();
+            switchPlayer();
+            roundHelper++;
+        }
+    }
+
+    public boolean completedPlacementRound(){return(roundHelper == 4);}
+
 }
