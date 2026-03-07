@@ -12,22 +12,43 @@ public class Board {
         scanner = new Scanner(System.in);
     }
     public void display(){
-        Piece funcObj = new Piece(); // helper object for piece name display
-        System.out.println("here is the board");
-        System.out.println("   0   1    2   3");
-        for(int i = 0 ; i < 4 ; i++){
-            System.out.print(i + " ");
-            for(int j = 0 ; j < 4 ; j++){
-                if(!(grid[i][j] == null)){
-                    System.out.print(" [" + funcObj.pieceName(grid[i][j]) + "] ");
-                }
-                else{
-                    System.out.print(" [] ");
-                }
-                
-            }
-            System.out.println();
+
+        System.out.println("\nHere is the board");
+
+        // Column numbers
+        System.out.print("    ");
+        for(int c = 0; c < 4; c++){
+            System.out.printf("  %d   ", c);
         }
+        System.out.println();
+
+        // Top border
+        System.out.println("   +-----+-----+-----+-----+");
+
+        for(int i = 0; i < 4; i++){
+
+            // Row number
+            System.out.print(i + "  |");
+
+            for(int j = 0; j < 4; j++){
+
+                String cell;
+
+                if(grid[i][j] == null){
+                    cell = " ";
+                } 
+                else{
+                    cell = grid[i][j].pieceName(grid[i][j]);
+                }
+
+                System.out.printf(" %-3s |", cell);
+            }
+
+            System.out.println();
+            System.out.println("   +-----+-----+-----+-----+");
+        }
+
+        System.out.println();
     }
 
     public void placeAPiece(Piece thisPiece, int a, int b){

@@ -188,7 +188,7 @@ public class Game  {
     }
 
     public void moveAPiece(){
-        // taking user input ffor source coords
+        // taking user input for source coords
         int srcRow, srcCol;
         System.out.println("Enter the piece you wish to move");
         System.out.println("Enter piece row");
@@ -243,85 +243,118 @@ public class Game  {
             board.grid[srcRow][srcCol] = null;
         }
         else{
-            board.grid[dstRow][dstCol].status = Piece.Status.IN_LOBBY;
+            Piece capturedPiece = board.grid[dstRow][dstCol];
+            capturedPiece.status = Piece.Status.IN_LOBBY;
+
             board.grid[dstRow][dstCol] = currentPiece;
             board.grid[srcRow][srcCol] = null;
         }
 
     }
 
-    public void play(){
-    //     // helper();
-        board.display();
-        piecePlacer();
-        switchPlayer();
-        board.display();
-        piecePlacer();
-        switchPlayer();
-        board.display();
-        piecePlacer();
-        switchPlayer();
-        board.display();
-        piecePlacer();
-        switchPlayer();
-        board.display();
-        piecePlacer();
-        switchPlayer();
-        board.display();
-        moveAPiece();
-        board.display();
-    }
-
-    public boolean checkWin(Player tempPlayer){
-        Piece r,k,p;
-        
-        r = tempPlayer.rook; k = tempPlayer.knight; p = tempPlayer.pawn;
-        int rx, ry, kx, ky, px, py;
-        List<int[]> rCoords =  board.getPiecePositionsByColor(r.color); 
-        List<int[]> kCoords =  board.getPiecePositionsByColor(k.color); 
-        List<int[]> pCoords =  board.getPiecePositionsByColor(p.color); 
-
-        rx = rCoords.get(0)[0];
-        ry = rCoords.get(0)[1];
-        kx = kCoords.get(0)[0];
-        ky = kCoords.get(0)[1];
-        px = pCoords.get(0)[0];
-        py = pCoords.get(0)[1];
-
-        if(checkWinningCondition(rx,ry,kx,ky,px,py)){
-            return true;
+    public void moveOrPlace(){
+        System.out.println("1 = Move a piece 2 = Place a piece");
+        int choice = sc.nextInt();
+        switch (choice) {
+            case 1:moveAPiece();break;
+            case 2:piecePlacer();break;
         }
 
+    }
 
+    // public void play(){
+    // //     // helper();
+    //     board.display();
+    //     piecePlacer();
+    //     switchPlayer();
+    //     board.display();
+    //     piecePlacer();
+    //     switchPlayer();
+    //     board.display();
+    //     piecePlacer();
+    //     switchPlayer();
+    //     board.display();
+    //     piecePlacer();
+    //     switchPlayer();
+    //     board.display();
+    //     piecePlacer();
+    //     switchPlayer();
+    //     board.display();
+    //     moveAPiece();
+    //     board.display();
+    // }
 
+    public boolean checkWin(Player tempPlayer){
 
-        return false;
+        int rx=-1, ry=-1, kx=-1, ky=-1, px=-1, py=-1;
+
+        for(int i=0;i<4;i++){
+            for(int j=0;j<4;j++){
+
+                Piece p = board.grid[i][j];
+
+                if(p == null) continue;
+
+                if(p == tempPlayer.rook){
+                    rx = i;
+                    ry = j;
+                }
+
+                if(p == tempPlayer.knight){
+                    kx = i;
+                    ky = j;
+                }
+
+                if(p == tempPlayer.pawn){
+                    px = i;
+                    py = j;
+                }
+            }
+        }
+
+        if(rx==-1 || kx==-1 || px==-1){
+            return false;
+        }
+
+        return checkWinningCondition(rx,ry,kx,ky,px,py);
     }
     // implementing game loop
     public void gameLoop(){
-        board.display();
-        if(!completedPlacementRound()){
-            placementRound();
-        }
-        while(!checkWin(currentPlayer)){
+    board.display();
 
-            switchPlayer();
-        }
+    if(!completedPlacementRound()){
+        placementRound();
     }
 
+    switchPlayer();
+
+    while(true){
+        board.display();
+        moveOrPlace();
+        board.display();
+
+        if(checkWin(currentPlayer)){
+            System.out.println("Winner: " + currentPlayer.rook.color);
+            break;
+        }
+
+        switchPlayer();
+    }
+}
+
     public void switchPlayer(){
-        if(currentPlayer == whitePlayer){ currentPlayer = blackPlayer ;}
-        else if(currentPlayer == blackPlayer){ currentPlayer = whitePlayer ;}
+        if(currentPlayer == whitePlayer){ currentPlayer = blackPlayer ; System.out.println("Current Player = Black");}
+        else if(currentPlayer == blackPlayer){ currentPlayer = whitePlayer ;  System.out.println("Current Player = White");}
     }
     
     public void placementRound(){
-        while(roundHelper < 5){
-            if(currentPlayer == whitePlayer){
-                System.out.println("White");
-            }
-            else if(currentPlayer == blackPlayer){
-                System.out.println("Black");
-            }
+        while(roundHelper < 4){
+            // if(currentPlayer == whitePlayer){
+            //     System.out.println("White");
+            // }
+            // else if(currentPlayer == blackPlayer){
+            //     System.out.println("Black");
+            // }
             piecePlacer();
             
             
@@ -329,6 +362,8 @@ public class Game  {
             switchPlayer();
             roundHelper++;
         }
+        System.out.println("Completed Placement Round");
+        
     }
 
     public boolean completedPlacementRound(){return(roundHelper == 4);}
