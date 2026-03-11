@@ -13,7 +13,7 @@ public class Board {
     }
     public void display(){
 
-        System.out.println("\nHere is the board");
+        // System.out.println("\nHere is the board");
 
         // Column numbers
         System.out.print("    ");
@@ -106,10 +106,20 @@ public class Board {
         }
 
         if(pieceType == Piece.Type.PAWN){
-            if(!(Math.abs(rowDiff) <= 1 && (Math.abs(colDiff) <= 1))){
+            if(grid[dstRow][dstCol] == null){
+                if( (Math.abs(rowDiff) == 1 && colDiff == 0) ||
+                    (Math.abs(colDiff) == 1 && rowDiff == 0) ){
+                    return true;
+                }
                 return false;
             }
-            return true;
+            if(grid[dstRow][dstCol] != null){
+                if(!(Math.abs(rowDiff) <= 1 && (Math.abs(colDiff) <= 1))){
+                return false;
+                }
+                return true;
+            }
+            
         }
 
         return false;

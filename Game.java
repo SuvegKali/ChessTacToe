@@ -41,88 +41,95 @@ public class Game  {
     // }
 
     public void piecePlacer(){
-        if(currentPlayer == whitePlayer){
-            System.out.println("White");
-        }
-        else if(currentPlayer == blackPlayer){
-            System.out.println("Black");
-        }
-        System.out.println("Which piece ? : 1 = ROOK, 2 = KNIGHT, 3 = PAWN");
-        int pieceType = sc.nextInt();
-        
-        
-
-        Piece temp = null;
-        switch(pieceType){
-            case 1: temp = currentPlayer.rook; break;
-            case 2: temp = currentPlayer.knight; break;
-            case 3: temp = currentPlayer.pawn; break;
-        }
-
-        System.out.println("Which row ? 0 - 3");
-        int pieceRow = sc.nextInt();
-
-        System.out.println("Which col ? 0 - 3");
-        int pieceCol = sc.nextInt();
-
-        if(temp.status == Piece.Status.ON_BOARD){
-            System.out.println("Already placed this piece");
-            return;
-        }
-
-        if(currentPlayer == whitePlayer){
-            if(whitePiecesPlaced < 2){
-                board.placeAPiece(temp, pieceRow, pieceCol);
-                whitePiecesPlaced++;
-            }
-            List<int[]> whiteCoordinates = board.whitePieceList();
-            if(whiteCoordinates.size() >= 2){
-                int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
-
-                tempRX = whiteCoordinates.get(0)[0];
-                tempKX = whiteCoordinates.get(1)[0];
-
-                tempRY = whiteCoordinates.get(0)[1];
-                tempKY = whiteCoordinates.get(1)[1];
-
-                tempPX = pieceRow;
-                tempPY = pieceCol;
-
-                if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
-                    board.placeAPiece(temp, pieceRow, pieceCol);
-                } else {
-                    System.out.println("Cannot place here, game will end !");
+            while(true){
+                // switchPlayer();
+                board.display();
+                if(currentPlayer == whitePlayer){
+                    System.out.println("White");
                 }
-            }
-            
-        }
-        else if(currentPlayer == blackPlayer){
-            if(blackPiecesPlaced < 2){
-                board.placeAPiece(temp, pieceRow, pieceCol);
-                blackPiecesPlaced++;
-            }
-            List<int[]> blackCoordinates = board.blackPieceList();
-            if(blackCoordinates.size() >= 2){
-                int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
-            
-                tempRX = blackCoordinates.get(0)[0];
-                tempKX = blackCoordinates.get(1)[0];
-                // tempPX = blackCoordinates.get(2)[0];
-                tempRY = blackCoordinates.get(0)[1];
-                tempKY = blackCoordinates.get(1)[1];
-                // tempPY = whiteCoordinates.get(2)[1];
-                tempPX = pieceRow;
-                tempPY = pieceCol;
-                if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
-                    board.placeAPiece(temp, pieceRow, pieceCol);
+                else if(currentPlayer == blackPlayer){
+                    System.out.println("Black");
+                }
+                System.out.println("Which piece ? : 1 = ROOK, 2 = KNIGHT, 3 = PAWN");
+                int pieceType = sc.nextInt();
+                
+                
 
+                Piece temp = null;
+                switch(pieceType){
+                    case 1: temp = currentPlayer.rook; break;
+                    case 2: temp = currentPlayer.knight; break;
+                    case 3: temp = currentPlayer.pawn; break;
                 }
-                else{
-                    System.out.println("Cannot place here, game will end !");
+
+                System.out.println("Which row ? 0 - 3");
+                int pieceRow = sc.nextInt();
+
+                System.out.println("Which col ? 0 - 3");
+                int pieceCol = sc.nextInt();
+
+                if(temp.status == Piece.Status.ON_BOARD){
+                    System.out.println("Already placed this piece");
+                    continue;
                 }
+
+                if(currentPlayer == whitePlayer){
+                    if(board.whitePieceList().size() < 2){
+                        board.placeAPiece(temp, pieceRow, pieceCol);
+                        // board.whitePieceList().size()++;
+                    }
+                    List<int[]> whiteCoordinates = board.whitePieceList();
+                    if(whiteCoordinates.size() >= 2){
+                        int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
+
+                        tempRX = whiteCoordinates.get(0)[0];
+                        tempKX = whiteCoordinates.get(1)[0];
+
+                        tempRY = whiteCoordinates.get(0)[1];
+                        tempKY = whiteCoordinates.get(1)[1];
+
+                        tempPX = pieceRow;
+                        tempPY = pieceCol;
+
+                        if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+                            board.placeAPiece(temp, pieceRow, pieceCol);
+                        } else {
+                            System.out.println("Cannot place here, game will end !");
+                            continue;
+                        }
+                    }
+                    
+                }
+                else if(currentPlayer == blackPlayer){
+                    if(board.blackPieceList().size() < 2){
+                        board.placeAPiece(temp, pieceRow, pieceCol);
+                        // blackPiecesPlaced++;
+                    }
+                    List<int[]> blackCoordinates = board.blackPieceList();
+                    if(blackCoordinates.size() >= 2){
+                        int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
+                    
+                        tempRX = blackCoordinates.get(0)[0];
+                        tempKX = blackCoordinates.get(1)[0];
+                        // tempPX = blackCoordinates.get(2)[0];
+                        tempRY = blackCoordinates.get(0)[1];
+                        tempKY = blackCoordinates.get(1)[1];
+                        // tempPY = whiteCoordinates.get(2)[1];
+                        tempPX = pieceRow;
+                        tempPY = pieceCol;
+                        if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
+                            board.placeAPiece(temp, pieceRow, pieceCol);
+
+                        }
+                        else{
+                            System.out.println("Cannot place here, game will end !");
+                            continue;
+                        }
+                    }
+
             }
             
-            
+            break;
 
         }
 
@@ -130,11 +137,9 @@ public class Game  {
         //     board.placeAPiece(temp, pieceRow,pieceCol);
         //     piecesPlaced++;
         // }
-        // else{
-            
+        // else{         
         //     List<int[]> coordinates = board.getPiecePositionsByColor(currentPlayer.knight.color);
-        //     int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;
-            
+        //     int tempRX, tempKX, tempPX, tempRY, tempKY, tempPY;         
         //     tempRX = coordinates.get(0)[0];
         //     tempKX = coordinates.get(1)[0];
         //     // tempPX = coordinates.get(2)[0];
@@ -143,12 +148,8 @@ public class Game  {
         //     // tempPY = coordinates.get(2)[1];
         //     tempPX = pieceRow;
         //     tempPY = pieceCol;
-
-
-
         //     if(!checkWinningCondition(tempRX, tempRY, tempKX, tempKY, tempPX, tempPY)){
         //         board.placeAPiece(temp, pieceRow, pieceCol);
-
         //     }
         //     else{
         //         System.out.println("Cannot place here, game will end !");
@@ -189,70 +190,76 @@ public class Game  {
 
     public void moveAPiece(){
         // taking user input for source coords
-        int srcRow, srcCol;
-        System.out.println("Enter the piece you wish to move");
-        System.out.println("Enter piece row");
-        srcRow = sc.nextInt();
-        System.out.println("Enter piece column");
-        srcCol = sc.nextInt();
+        while(true){
+            // switchPlayer();
+            board.display();
+            int srcRow, srcCol;
+            System.out.println("Enter the piece you wish to move");
+            System.out.println("Enter piece row");
+            srcRow = sc.nextInt();
+            System.out.println("Enter piece column");
+            srcCol = sc.nextInt();
 
-        // validating user input
-        // checking if piece coords are in range
-        if(! (board.isSquareValid(srcRow, srcCol))){
-            System.out.println("Piece coordinates out of range ");
-            return;
-        }
+            // validating user input
+            // checking if piece coords are in range
+            if(! (board.isSquareValid(srcRow, srcCol))){
+                System.out.println("Piece coordinates out of range ");
+                continue;
+            }
 
-        //checking if the entered cell is not empty
-        if((board.grid[srcRow][srcCol] == null)){
-            System.out.println("There exists no piece at the entered cell");
-            return;
-        }
+            //checking if the entered cell is not empty
+            if((board.grid[srcRow][srcCol] == null)){
+                System.out.println("There exists no piece at the entered cell");
+                continue;
+            }
 
-        //checking if piece belongs to the current player
-        Piece currentPiece = board.grid[srcRow][srcCol];
-        // if(!(currentPlayer == whitePlayer && currentPiece.color == Piece.Color.WHITE)){
-        //     System.out.println("Please select your piece 1");
-        // }
-        // else if(!(currentPlayer == blackPlayer && currentPiece.color == Piece.Color.BLACK)){
-        //     System.out.println("Please select your piece 2");
-        // }
+            //checking if piece belongs to the current player
+            Piece currentPiece = board.grid[srcRow][srcCol];
+            // if(!(currentPlayer == whitePlayer && currentPiece.color == Piece.Color.WHITE)){
+            //     System.out.println("Please select your piece 1");
+            // }
+            // else if(!(currentPlayer == blackPlayer && currentPiece.color == Piece.Color.BLACK)){
+            //     System.out.println("Please select your piece 2");
+            // }
 
-        // taking user input for destination coords
-        int dstRow, dstCol;
-        System.out.println("Enter the destination you want to move to");
-        System.out.println("Enter destination row");
-        dstRow = sc.nextInt();
-        System.out.println("Enter destination column");
-        dstCol = sc.nextInt();
+            // taking user input for destination coords
+            int dstRow, dstCol;
+            System.out.println("Enter the destination you want to move to");
+            System.out.println("Enter destination row");
+            dstRow = sc.nextInt();
+            System.out.println("Enter destination column");
+            dstCol = sc.nextInt();
 
-        //checking if destination coords are in range
-        if(!(board.isSquareValid(dstRow, dstCol))){
-            System.out.println("Please enter destination coords in range");
-            return;
-        }
+            //checking if destination coords are in range
+            if(!(board.isSquareValid(dstRow, dstCol))){
+                System.out.println("Please enter destination coords in range");
+                continue;
+            }
 
-        // checking behaviour of pieces 
-        if(! board.validMove(srcRow,srcCol, dstRow, dstCol)){
-            System.out.println("This piece cannot move here as per the law of chess");
-            return;
-        }
+            // checking behaviour of pieces 
+            if(! board.validMove(srcRow,srcCol, dstRow, dstCol)){
+                System.out.println("This piece cannot move here as per the law of chess");
+                continue;
+            }
 
-        if(board.grid[dstRow][dstCol] == null){
-            board.grid[dstRow][dstCol] = currentPiece;
-            board.grid[srcRow][srcCol] = null;
-        }
-        else{
-            Piece capturedPiece = board.grid[dstRow][dstCol];
-            capturedPiece.status = Piece.Status.IN_LOBBY;
+            if(board.grid[dstRow][dstCol] == null){
+                board.grid[dstRow][dstCol] = currentPiece;
+                board.grid[srcRow][srcCol] = null;
+            }
+            else{
+                Piece capturedPiece = board.grid[dstRow][dstCol];
+                capturedPiece.status = Piece.Status.IN_LOBBY;
 
-            board.grid[dstRow][dstCol] = currentPiece;
-            board.grid[srcRow][srcCol] = null;
+                board.grid[dstRow][dstCol] = currentPiece;
+                board.grid[srcRow][srcCol] = null;
+            }
+            break;
         }
 
     }
 
     public void moveOrPlace(){
+        board.display();
         System.out.println("1 = Move a piece 2 = Place a piece");
         int choice = sc.nextInt();
         switch (choice) {
@@ -320,26 +327,27 @@ public class Game  {
     }
     // implementing game loop
     public void gameLoop(){
-    board.display();
-
-    if(!completedPlacementRound()){
-        placementRound();
-    }
-
-    switchPlayer();
-
-    while(true){
-        board.display();
-        moveOrPlace();
         board.display();
 
-        if(checkWin(currentPlayer)){
-            System.out.println("Winner: " + currentPlayer.rook.color);
-            break;
+        if(!completedPlacementRound()){
+            placementRound();
         }
 
-        switchPlayer();
-    }
+        // switchPlayer();
+
+        while(true){
+            // board.display();
+            moveOrPlace();
+            // board.display();
+
+            if(checkWin(currentPlayer)){
+                board.display();
+                System.out.println("Winner: " + currentPlayer.rook.color);
+                break;
+            }
+
+            switchPlayer();
+        }
 }
 
     public void switchPlayer(){
