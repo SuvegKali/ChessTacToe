@@ -10,7 +10,7 @@ public class GameGUI {
     private static final Color LIGHT_SQUARE   = new Color(0xF0D9B5);
     private static final Color DARK_SQUARE    = new Color(0xB58863);
     private static final Color SELECTED_COLOR = new Color(0x7FC97F);
-    private static final Color BG             = new Color(0x1A1A2E);
+    private static final Color BG             = new Color(0xF0E6CB);
     private static final Color PANEL_BG       = new Color(0x16213E);
     private static final Color ACCENT         = new Color(0xE94560);
     private static final Color TEXT_LIGHT     = new Color(0xEEEEEE);
@@ -73,7 +73,7 @@ public class GameGUI {
         bar.setBorder(new EmptyBorder(8, 0, 0, 0));
 
         JLabel title = new JLabel("CHESS TAC TOE");
-        title.setFont(new Font("Serif", Font.BOLD | Font.ITALIC, 28));
+        title.setFont(new Font("TF2 BUILD", Font.BOLD , 28));
         title.setForeground(ACCENT);
         bar.add(title);
         return bar;
