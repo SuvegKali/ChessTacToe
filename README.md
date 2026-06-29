@@ -35,3 +35,47 @@ Capturing is a tactical reset rather than an elimination:
 > **Winning the Game:** The first player to align their 3 pieces in a row wins!
 
 ---
+
+# 🛠️ Technology Stack and Tools Used
+
+## Technologies Used
+
+* Java
+* Java Swing (GUI Development)
+* Object-Oriented Programming (OOP)
+
+## Tools Used
+
+* IntelliJ IDEA
+* Git & GitHub
+* PlantUML
+
+---
+
+# ✨ Features and Functionalities Implemented
+
+## Core Features
+
+* Interactive 4x4 game board
+* Turn-based multiplayer gameplay
+* Chess-inspired movement system
+* Piece placement and movement validation
+* Win detection system
+* Capture and respawn mechanics
+* Cooldown system after captures
+* Dynamic game status updates
+
+## GUI Features
+
+* Graphical user interface using Java Swing
+* Highlighting selected pieces
+* Real-time board updates
+* Side panel for lobby pieces
+* Error dialogs for invalid actions
+
+## Additional Functionalities
+
+* Game-over handling
+* Player turn switching
+* Board refresh system
+* UML-based project design
