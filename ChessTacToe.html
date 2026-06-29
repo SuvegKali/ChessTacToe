@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chess Tac Toe</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── TF2 Palette ── */
+:root {
+  --bg:          #1A1710;
+  --panel:       #28231A;
+  --panel-light: #332C1E;
+  --border:      #5C4B28;
+  --border-hi:   #8B7340;
+  --rivet:       #4A3C1E;
+  --orange:      #CF7336;
+  --orange-hi:   #E88A40;
+  --gold:        #C9A84C;
+  --red:         #B8312F;
+  --red-hi:      #D94040;
+  --blu:         #4A7FA8;
+  --blu-hi:      #6499C2;
+  --text:        #EDE0C4;
+  --text-dim:    #8A7A58;
+  --board-light: #C8AA82;
+  --board-dark:  #7A4F2D;
+  --sel:         #CF7336;
+  --cell:        88px;
+}
+
+body {
+  background: var(--bg);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(0,0,0,0.06) 40px,
+      rgba(0,0,0,0.06) 41px
+    );
+  color: var(--text);
+  font-family: 'Impact', 'Arial Narrow', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 8px 24px;
+  gap: 12px;
+}
+
+/* ── Header band ── */
+.header-band {
+  width: 100%;
+  background: linear-gradient(180deg, #0E0C09 0%, #1A1710 100%);
+  border-bottom: 3px solid var(--border);
+  padding: 10px 16px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* hazard stripe accent lines */
+.header-band::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--orange) 0px,  var(--orange) 18px,
+    var(--bg)     18px, var(--bg)     24px
+  );
+}
+
+.header-band h1 {
+  color: var(--orange);
+  font-family: 'Impact', 'Arial Narrow', Arial, sans-serif;
+  font-size: clamp(1.6em, 6vw, 2.6em);
+  font-weight: 900;
+  font-style: normal;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 #000, 4px 4px 8px rgba(0,0,0,0.8);
+  line-height: 1;
+}
+
+.header-band .subtitle {
+  color: var(--gold);
+  font-size: clamp(0.55em, 2vw, 0.75em);
+  letter-spacing: 4px;
+  margin-top: 4px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+/* ── Layout ── */
+.game-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+/* ── Lobby panels ── */
+.lobby-panel {
+  background: linear-gradient(160deg, var(--panel-light) 0%, var(--panel) 100%);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 0 0 10px;
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow:
+    inset 0 1px 0 rgba(212,168,67,0.12),
+    0 6px 18px rgba(0,0,0,0.55);
+}
+
+/* rivet corners */
+.lobby-panel::before,
+.lobby-panel::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  background: radial-gradient(circle at 35% 30%, var(--border-hi), var(--rivet));
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #1A1410;
+}
+.lobby-panel::before { top: 7px; left: 7px; }
+.lobby-panel::after  { top: 7px; right: 7px; }
+
+/* Team colour band at top of panel */
+.lobby-title {
+  width: 100%;
+  text-align: center;
+  font-size: 1em;
+  font-weight: 900;
+  letter-spacing: 3px;
+  padding: 8px 0 6px;
+  border-radius: 2px 2px 0 0;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  border-bottom: 1px solid var(--border);
+}
+
+#red-lobby  .lobby-title { background: linear-gradient(180deg, #8B1A18 0%, #5A1210 100%); color: #FFB0AE; }
+#blu-lobby  .lobby-title { background: linear-gradient(180deg, #1E4E72 0%, #143550 100%); color: #A8D0F0; }
+
+/* ── Piece cards ── */
+.piece-card {
+  background: linear-gradient(160deg, #302A1C 0%, #221D12 100%);
+  border-radius: 3px;
+  padding: 8px 6px 6px;
+  width: 90px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+  position: relative;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.piece-card:hover:not(.on-board) {
+  border-color: var(--border-hi);
+  box-shadow: 0 0 0 1px var(--border-hi), 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.piece-card.selected {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px var(--orange), 0 0 14px rgba(207,115,54,0.5);
+}
+
+.piece-card.on-board {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.piece-symbol {
+  font-size: 2em;
+  line-height: 1.1;
+}
+
+.piece-name {
+  font-size: 0.6em;
+  color: var(--text-dim);
+  margin-top: 3px;
+  letter-spacing: 1px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.on-board-badge {
+  position: absolute;
+  top: 3px; right: 3px;
+  background: #3A3020;
+  color: var(--text-dim);
+  font-size: 0.44em;
+  padding: 1px 3px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  border: 1px solid var(--border);
+}
+
+/* ── Board ── */
+.board-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Wooden frame around board */
+.board-frame {
+  padding: 8px;
+  background: linear-gradient(135deg, #5C3E1E 0%, #3D2810 50%, #5C3E1E 100%);
+  border: 3px solid #2A1C0A;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 12px rgba(0,0,0,0.6),
+    0 8px 24px rgba(0,0,0,0.7),
+    0 0 0 1px #8B6030;
+  position: relative;
+}
+
+/* frame corner bolts */
+.board-frame::before,
+.board-frame::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  background: radial-gradient(circle at 35% 30%, #9B8040, #4A3010);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #1A1008;
+  z-index: 2;
+}
+.board-frame::before { top: 4px; left: 4px;
+  box-shadow: 0 0 0 1px #1A1008,
+    calc(var(--frame-w) - 18px) 0 0 0 radial-gradient(circle at 35% 30%, #9B8040, #4A3010),
+    0 calc(var(--frame-h) - 18px) 0 0 radial-gradient(circle at 35% 30%, #9B8040, #4A3010),
+    calc(var(--frame-w) - 18px) calc(var(--frame-h) - 18px) 0 0 radial-gradient(circle at 35% 30%, #9B8040, #4A3010);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, var(--cell));
+  grid-template-rows: repeat(4, var(--cell));
+  border: 2px solid #2A1C0A;
+  position: relative;
+}
+
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--cell) * 0.52);
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+  user-select: none;
+  line-height: 1;
+}
+
+.cell.light  { background: var(--board-light); }
+.cell.dark   { background: var(--board-dark);  }
+.cell.sel-bg { background: var(--sel) !important; }
+
+/* valid move target — orange dot in center */
+.cell.valid-target::after {
+  content: '';
+  position: absolute;
+  width: 28%;
+  height: 28%;
+  background: rgba(207,115,54,0.65);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* valid capture — orange glow border */
+.cell.valid-capture::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 3px solid rgba(207,115,54,0.85);
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+/* ── Win overlay ── */
+.win-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,8,5,0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.win-inner {
+  background: linear-gradient(160deg, var(--panel-light), var(--panel));
+  border: 2px solid var(--border-hi);
+  border-radius: 4px;
+  padding: 28px 36px;
+  text-align: center;
+  box-shadow: 0 0 0 1px var(--border), 0 12px 40px rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.win-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.win-text {
+  font-size: clamp(1.2em, 4vw, 1.8em);
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+}
+.win-text.red-win { color: var(--red-hi); }
+.win-text.blu-win { color: var(--blu-hi); }
+
+.win-sub {
+  color: var(--gold);
+  font-size: 0.75em;
+  letter-spacing: 3px;
+  margin-bottom: 22px;
+  font-family: Arial, sans-serif;
+}
+
+.play-again-btn {
+  background: linear-gradient(180deg, #D88038 0%, #9E5520 100%);
+  color: #fff;
+  border: none;
+  border-top: 1px solid #F0A060;
+  border-bottom: 2px solid #6A3510;
+  padding: 10px 28px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Impact', Arial, sans-serif;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  transition: filter 0.15s;
+}
+.play-again-btn:hover { filter: brightness(1.15); }
+
+/* ── Rules button ── */
+.rules-btn {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(180deg, #D88038 0%, #9E5520 100%);
+  border: none;
+  border-top: 1px solid #F0A060;
+  border-bottom: 2px solid #6A3510;
+  border-radius: 50%;
+  color: #fff;
+  font-family: 'Impact', Arial, sans-serif;
+  font-size: 1.1em;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+  transition: filter 0.15s;
+  line-height: 36px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+}
+.rules-btn:hover { filter: brightness(1.2); }
+
+/* ── Rules modal ── */
+.rules-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,8,5,0.85);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.rules-overlay.open { display: flex; }
+
+.rules-modal {
+  background: linear-gradient(160deg, var(--panel-light), var(--panel));
+  border: 2px solid var(--border-hi);
+  border-radius: 4px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 0 0 1px var(--border), 0 16px 48px rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.rules-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #1A1408 0%, var(--panel) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.rules-modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.rules-modal-title {
+  color: var(--orange);
+  font-family: 'Impact', Arial, sans-serif;
+  font-size: 1.1em;
+  letter-spacing: 3px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  text-transform: uppercase;
+}
+
+.rules-close-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-size: 1em;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  line-height: 26px;
+  text-align: center;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: Arial, sans-serif;
+}
+.rules-close-btn:hover { color: var(--text); border-color: var(--border-hi); }
+
+.rules-body {
+  padding: 18px 20px 22px;
+  font-family: Arial, sans-serif;
+  font-size: 0.84em;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.rules-section {
+  margin-bottom: 18px;
+}
+
+.rules-section-title {
+  font-family: 'Impact', Arial, sans-serif;
+  font-size: 0.95em;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rules-section p {
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.rules-section ul {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+
+.rules-section li {
+  margin-bottom: 5px;
+  color: var(--text);
+}
+
+.rules-section li strong,
+.rules-section p strong {
+  color: var(--orange);
+  font-weight: bold;
+}
+
+.rules-tag {
+  display: inline-block;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 6px;
+  font-size: 0.88em;
+  color: var(--text-dim);
+  margin: 0 2px;
+}
+
+.rules-tag.red { border-color: var(--red); color: #E87070; }
+.rules-tag.blu { border-color: var(--blu); color: #70B0E0; }
+
+.rules-win-banner {
+  background: linear-gradient(135deg, #2A1A08, #1A1008);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 10px 14px;
+  text-align: center;
+  color: var(--gold);
+  font-family: 'Impact', Arial, sans-serif;
+  font-size: 0.95em;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+/* scrollbar styling for the modal */
+.rules-modal::-webkit-scrollbar { width: 6px; }
+.rules-modal::-webkit-scrollbar-track { background: var(--panel); }
+.rules-modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Status bar ── */
+.status-bar {
+  background: linear-gradient(160deg, var(--panel-light), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 520px;
+  line-height: 1.7;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
+}
+
+.turn-line {
+  font-size: 1.05em;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.cd-line {
+  color: var(--red-hi);
+  font-weight: 900;
+  min-height: 1.4em;
+  font-size: 0.9em;
+  letter-spacing: 2px;
+}
+
+.hint-line {
+  color: var(--text-dim);
+  font-size: 0.72em;
+  letter-spacing: 0.5px;
+  font-family: Arial, sans-serif;
+  font-weight: normal;
+}
+
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #9E3020 0%, #6A1E12 100%);
+  border: 1px solid #C04030;
+  border-bottom: 2px solid #3A1008;
+  color: #FFD0C8;
+  padding: 9px 22px;
+  border-radius: 3px;
+  font-size: 0.84em;
+  font-family: 'Impact', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s;
+  white-space: nowrap;
+  z-index: 999;
+  max-width: 90vw;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+}
+#toast.show { opacity: 1; }
+
+/* ── Piece colors ── */
+.piece-red {
+  color: #F04040;
+  text-shadow: 0 0 4px #000, 0 1px 4px #000, 0 0 8px rgba(180,0,0,0.4);
+}
+.piece-blu {
+  color: #5AAAE0;
+  text-shadow: 0 0 4px #000, 0 1px 4px #000, 0 0 8px rgba(0,80,180,0.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  :root { --cell: 66px; }
+  .lobby-panel { width: 84px; }
+  .piece-card  { width: 72px; padding: 6px 4px 5px; }
+  .piece-symbol { font-size: 1.6em; }
+  .game-container { gap: 8px; }
+  .board-frame { padding: 5px; }
+}
+
+@media (max-width: 380px) {
+  :root { --cell: 55px; }
+  .lobby-panel { width: 70px; }
+  .piece-card  { width: 60px; }
+  .piece-symbol { font-size: 1.3em; }
+}
+</style>
+</head>
+<body>
+
+<div class="header-band">
+  <h1>CHESS TAC TOE</h1>
+  <div class="subtitle">Strategic Combat Edition</div>
+</div>
+
+<div class="game-container">
+
+  <div class="lobby-panel" id="red-lobby">
+    <div class="lobby-title">RED</div>
+  </div>
+
+  <div class="board-frame">
+    <div class="board" id="board"></div>
+    <div class="win-overlay" id="win-overlay">
+      <div class="win-inner">
+        <div class="win-text" id="win-text"></div>
+        <div class="win-sub">VICTORY</div>
+        <button class="play-again-btn" id="play-again-btn">▶ PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lobby-panel" id="blu-lobby">
+    <div class="lobby-title">BLU</div>
+  </div>
+
+</div>
+
+<div class="status-bar">
+  <div class="turn-line" id="turn-line"></div>
+  <div class="cd-line"   id="cd-line"></div>
+  <div class="hint-line" id="hint-line"></div>
+</div>
+
+<div id="toast"></div>
+
+<button class="rules-btn" id="rules-btn" title="Game Rules">?</button>
+
+<div class="rules-overlay" id="rules-overlay">
+  <div class="rules-modal">
+    <div class="rules-modal-header">
+      <span class="rules-modal-title">♟ Game Rules</span>
+      <button class="rules-close-btn" id="rules-close-btn">✕</button>
+    </div>
+    <div class="rules-body">
+
+      <div class="rules-section">
+        <div class="rules-section-title">Overview</div>
+        <p>A strategic hybrid of Chess and Tic-Tac-Toe played on a <strong>4×4 grid</strong>. Two teams — <span class="rules-tag red">RED</span> and <span class="rules-tag blu">BLU</span> — each control 3 pieces: a <strong>Rook</strong>, a <strong>Knight</strong>, and a <strong>Pawn</strong>.</p>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-section-title">Objective</div>
+        <p>Be the first to align all <strong>3 of your pieces</strong> in a straight line — horizontally, vertically, or diagonally.</p>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-section-title">① Opening Phase</div>
+        <ul>
+          <li><strong>RED</strong> places one piece anywhere on the board, then <strong>BLU</strong> places one — and so on.</li>
+          <li>Each player <strong>must place at least 2 pieces</strong> before they can move or capture.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-section-title">② Player Actions</div>
+        <p>Once you have 2 pieces deployed, on your turn choose <strong>one</strong>:</p>
+        <ul>
+          <li><strong>Place</strong> — put your 3rd piece on any empty square.</li>
+          <li><strong>Move</strong> — move an existing piece using standard Chess movement.</li>
+          <li><strong>Capture</strong> — take an opponent's piece (subject to cooldown).</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-section-title">③ Movement Rules</div>
+        <ul>
+          <li><strong>Rook</strong> — slides any number of squares in a straight line; blocked by pieces in its path.</li>
+          <li><strong>Knight</strong> — jumps in an L-shape (2 + 1 squares); can leap over other pieces.</li>
+          <li><strong>Pawn</strong> — moves <strong>1 square orthogonally</strong> (any direction); captures <strong>1 square diagonally</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <div class="rules-section-title">⚔ Capture &amp; Respawn</div>
+        <ul>
+          <li>A captured piece returns to its owner's lobby and <strong>can be redeployed</strong> on any future turn.</li>
+          <li><strong>Respawn restriction:</strong> you cannot place a returning piece on a square that <strong>immediately completes a winning line</strong>.</li>
+          <li><strong>Cooldown:</strong> after capturing, you must wait <strong>one full turn</strong> before capturing again. The <span class="rules-tag">⚔ COOLDOWN</span> indicator appears in the status bar.</li>
+        </ul>
+      </div>
+
+      <div class="rules-win-banner">🏆 First to align all 3 pieces wins!</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ─────────────────────────────────────────────────────────────
+//  Constants
+// ─────────────────────────────────────────────────────────────
+const SYM = {
+  white: { rook: '♖', knight: '♘', pawn: '♙' },
+  black: { rook: '♜', knight: '♞', pawn: '♟' }
+};
+const PIECE_TYPES = ['rook', 'knight', 'pawn'];
+const COLOR_NAME  = ['RED', 'BLU'];
+const TURN_COLOR  = ['#E05050', '#5AAAE0'];
+const PIECE_CLASS = ['piece-red', 'piece-blu'];
+
+// ─────────────────────────────────────────────────────────────
+//  Game state
+// ─────────────────────────────────────────────────────────────
+let board;
+let players;
+let curIdx;
+let selLobby;
+let selBoard;
+let gameOver;
+let toastTid;
+
+function makePlayers() {
+  return [0, 1].map(i => ({
+    color:    i === 0 ? 'white' : 'black',
+    cooldown: 0,
+    placedCount: 0,   // increments each time a piece is placed; opening ends at 2
+    pieces:   PIECE_TYPES.map(t => ({
+      type:       t,
+      status:     'IN_LOBBY',
+      r:          null,
+      c:          null,
+      everPlaced: false
+    }))
+  }));
+}
+
+function initGame() {
+  board    = Array.from({ length: 4 }, () => Array(4).fill(null));
+  players  = makePlayers();
+  curIdx   = 0;
+  selLobby = null;
+  selBoard = null;
+  gameOver = false;
+  document.getElementById('win-overlay').style.display = 'none';
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────────────────────
+const cur = () => players[curIdx];
+const inB = (r, c) => r >= 0 && r < 4 && c >= 0 && c < 4;
+
+function onBoardCount(pIdx) {
+  return players[pIdx].pieces.filter(p => p.status === 'ON_BOARD').length;
+}
+
+function mustPlace(pIdx) {
+  return players[pIdx].placedCount < 2;
+}
+
+function getMoves(piece, fr, fc, color) {
+  const moves = [];
+  if (piece.type === 'rook') {
+    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      let r = fr + dr, c = fc + dc;
+      while (inB(r, c)) {
+        if (board[r][c] === null) {
+          moves.push({ r, c, isCapture: false });
+        } else if (board[r][c].color !== color) {
+          moves.push({ r, c, isCapture: true });
+          break;
+        } else { break; }
+        r += dr; c += dc;
+      }
+    }
+  } else if (piece.type === 'knight') {
+    for (const [dr, dc] of [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[-1,2],[1,-2],[1,2]]) {
+      const r = fr + dr, c = fc + dc;
+      if (!inB(r, c)) continue;
+      if (board[r][c] === null)
+        moves.push({ r, c, isCapture: false });
+      else if (board[r][c].color !== color)
+        moves.push({ r, c, isCapture: true });
+    }
+  } else { // pawn
+    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const r = fr + dr, c = fc + dc;
+      if (inB(r, c) && board[r][c] === null)
+        moves.push({ r, c, isCapture: false });
+    }
+    for (const [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
+      const r = fr + dr, c = fc + dc;
+      if (inB(r, c) && board[r][c] !== null && board[r][c].color !== color)
+        moves.push({ r, c, isCapture: true });
+    }
+  }
+  return moves;
+}
+
+function collinear(pos) {
+  if (pos.length < 3) return false;
+  const [a, b, c] = pos;
+  return (a.r === b.r && b.r === c.r) ||
+         (a.c === b.c && b.c === c.c) ||
+         ((a.r - a.c) === (b.r - b.c) && (b.r - b.c) === (c.r - c.c)) ||
+         ((a.r + a.c) === (b.r + b.c) && (b.r + b.c) === (c.r + c.c));
+}
+
+function checkWin(pIdx) {
+  const pos = players[pIdx].pieces
+    .filter(p => p.status === 'ON_BOARD')
+    .map(p => ({ r: p.r, c: p.c }));
+  return pos.length === 3 && collinear(pos);
+}
+
+function wouldWin(pIdx, r, c) {
+  const pos = players[pIdx].pieces
+    .filter(p => p.status === 'ON_BOARD')
+    .map(p => ({ r: p.r, c: p.c }));
+  pos.push({ r, c });
+  return pos.length === 3 && collinear(pos);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Toast
+// ─────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTid);
+  toastTid = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function clearSel() {
+  selLobby = null;
+  selBoard = null;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Turn switching
+// ─────────────────────────────────────────────────────────────
+function switchPlayer() {
+  players[curIdx].cooldown = Math.max(0, players[curIdx].cooldown - 1);
+  curIdx = 1 - curIdx;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Core actions
+// ─────────────────────────────────────────────────────────────
+function doPlace(r, c) {
+  const player   = cur();
+  const pieceIdx = selLobby.pieceIdx;
+  const piece    = player.pieces[pieceIdx];
+
+  if (wouldWin(curIdx, r, c)) {
+    toast("Cannot place here — would complete a winning line!");
+    clearSel();
+    render();
+    return;
+  }
+
+  piece.status     = 'ON_BOARD';
+  piece.r          = r;
+  piece.c          = c;
+  piece.everPlaced = true;
+  board[r][c]      = { color: player.color, type: piece.type, pieceIdx };
+  player.placedCount++;
+
+  clearSel();
+  render();
+
+  if (checkWin(curIdx)) { showWin(); return; }
+
+  switchPlayer();
+  render();
+}
+
+function doMove(tr, tc) {
+  const player            = cur();
+  const { r: fr, c: fc } = selBoard;
+  const cell              = board[fr][fc];
+  const piece             = player.pieces[cell.pieceIdx];
+  const moves             = getMoves(piece, fr, fc, player.color);
+  const mv                = moves.find(m => m.r === tr && m.c === tc);
+
+  if (!mv) {
+    toast("Invalid move for this piece!");
+    clearSel();
+    render();
+    return;
+  }
+
+  if (mv.isCapture && player.cooldown > 0) {
+    toast(`Capture on cooldown — wait ${player.cooldown} more turn${player.cooldown > 1 ? 's' : ''}!`);
+    clearSel();
+    render();
+    return;
+  }
+
+  if (mv.isCapture) {
+    const tgt  = board[tr][tc];
+    const opP  = players[tgt.color === 'white' ? 0 : 1];
+    const capP = opP.pieces[tgt.pieceIdx];
+    capP.status = 'IN_LOBBY';
+    capP.r      = null;
+    capP.c      = null;
+    player.cooldown = 2;
+  }
+
+  board[fr][fc] = null;
+  board[tr][tc] = { color: player.color, type: piece.type, pieceIdx: cell.pieceIdx };
+  piece.r = tr;
+  piece.c = tc;
+
+  clearSel();
+  render();
+
+  if (checkWin(curIdx)) { showWin(); return; }
+
+  switchPlayer();
+  render();
+}
+
+function showWin() {
+  gameOver = true;
+  const name    = COLOR_NAME[curIdx];
+  const winEl   = document.getElementById('win-text');
+  winEl.textContent = `${name} WINS!`;
+  winEl.className   = `win-text ${curIdx === 0 ? 'red-win' : 'blu-win'}`;
+  document.getElementById('win-overlay').style.display = 'flex';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Click handlers
+// ─────────────────────────────────────────────────────────────
+function onLobbyClick(pIdx, pieceIdx) {
+  if (gameOver) return;
+  if (pIdx !== curIdx) { toast("It's not your turn!"); return; }
+
+  const piece = players[pIdx].pieces[pieceIdx];
+  if (piece.status === 'ON_BOARD') return;
+
+  if (selLobby && selLobby.pIdx === pIdx && selLobby.pieceIdx === pieceIdx) {
+    clearSel();
+  } else {
+    clearSel();
+    selLobby = { pIdx, pieceIdx };
+  }
+  render();
+}
+
+function onCellClick(r, c) {
+  if (gameOver) return;
+  const player = cur();
+  const cell   = board[r][c];
+
+  if (selLobby !== null) {
+    if (cell !== null) {
+      if (cell.color === player.color) {
+        if (!mustPlace(curIdx)) {
+          clearSel();
+          selBoard = { r, c };
+          render();
+          return;
+        }
+        toast("Place a piece from your lobby first!");
+        clearSel(); render(); return;
+      }
+      toast("Cannot place on an occupied square!");
+      clearSel(); render(); return;
+    }
+    doPlace(r, c);
+    return;
+  }
+
+  if (selBoard !== null) {
+    const { r: sr, c: sc } = selBoard;
+    if (sr === r && sc === c) { clearSel(); render(); return; }
+    if (cell !== null && cell.color === player.color) {
+      clearSel();
+      selBoard = { r, c };
+      render();
+      return;
+    }
+    doMove(r, c);
+    return;
+  }
+
+  if (cell !== null && cell.color === player.color) {
+    if (mustPlace(curIdx)) {
+      toast("Place a piece from your lobby first!");
+      return;
+    }
+    selBoard = { r, c };
+    render();
+    return;
+  }
+
+  if (cell !== null && cell.color !== player.color) {
+    toast(mustPlace(curIdx)
+      ? "Place a piece from your lobby first!"
+      : "Select one of your own pieces first!");
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Rendering
+// ─────────────────────────────────────────────────────────────
+function render() {
+  renderBoard();
+  renderLobby(0, 'red-lobby');
+  renderLobby(1, 'blu-lobby');
+  renderStatus();
+}
+
+function renderBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+
+  const validMoves = new Map();
+  if (selBoard !== null) {
+    const { r: sr, c: sc } = selBoard;
+    const cell = board[sr][sc];
+    if (cell) {
+      const player = players[cell.color === 'white' ? 0 : 1];
+      const piece  = player.pieces[cell.pieceIdx];
+      getMoves(piece, sr, sc, cell.color).forEach(m => {
+        validMoves.set(`${m.r},${m.c}`, m.isCapture ? 'cap' : 'move');
+      });
+    }
+  }
+
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const div  = document.createElement('div');
+      const lite = (r + c) % 2 === 0;
+      div.className = 'cell ' + (lite ? 'light' : 'dark');
+
+      if (selBoard && selBoard.r === r && selBoard.c === c) {
+        div.classList.add('sel-bg');
+      } else {
+        const key = `${r},${c}`;
+        if (validMoves.has(key)) {
+          div.classList.add(validMoves.get(key) === 'cap' ? 'valid-capture' : 'valid-target');
+        }
+      }
+
+      const bp = board[r][c];
+      if (bp) {
+        div.textContent = SYM[bp.color][bp.type];
+        div.classList.add(bp.color === 'white' ? 'piece-red' : 'piece-blu');
+      }
+
+      div.addEventListener('click', () => onCellClick(r, c));
+      boardEl.appendChild(div);
+    }
+  }
+}
+
+function renderLobby(pIdx, containerId) {
+  const player    = players[pIdx];
+  const container = document.getElementById(containerId);
+  const titleEl   = container.querySelector('.lobby-title');
+  container.innerHTML = '';
+  container.appendChild(titleEl);
+
+  player.pieces.forEach((piece, idx) => {
+    const card = document.createElement('div');
+    card.className = 'piece-card';
+
+    const isOnBoard  = piece.status === 'ON_BOARD';
+    const isSelected = selLobby && selLobby.pIdx === pIdx && selLobby.pieceIdx === idx;
+
+    if (isOnBoard)  card.classList.add('on-board');
+    if (isSelected) card.classList.add('selected');
+
+    const sym = document.createElement('div');
+    sym.className   = `piece-symbol ${PIECE_CLASS[pIdx]}`;
+    sym.textContent = SYM[player.color][piece.type];
+
+    const name = document.createElement('div');
+    name.className   = 'piece-name';
+    name.textContent = piece.type.toUpperCase();
+
+    card.appendChild(sym);
+    card.appendChild(name);
+
+    if (isOnBoard) {
+      const badge = document.createElement('div');
+      badge.className   = 'on-board-badge';
+      badge.textContent = 'ON BOARD';
+      card.appendChild(badge);
+    }
+
+    card.addEventListener('click', () => onLobbyClick(pIdx, idx));
+    container.appendChild(card);
+  });
+}
+
+function renderStatus() {
+  const player = cur();
+  const cname  = COLOR_NAME[curIdx];
+  const ccol   = TURN_COLOR[curIdx];
+
+  let hint = '';
+  if (mustPlace(curIdx)) {
+    hint = 'Select a lobby piece to deploy on the board';
+  } else if (selLobby !== null) {
+    hint = 'Click an empty square to deploy — or click a board piece to move';
+  } else if (selBoard !== null) {
+    hint = 'Click a destination to move, or an enemy piece to capture';
+  } else {
+    const inLobby = player.pieces.filter(p => p.status === 'IN_LOBBY').length;
+    hint = inLobby > 0
+      ? 'Select a lobby piece or a board piece'
+      : 'Select one of your board pieces to move';
+  }
+
+  document.getElementById('turn-line').innerHTML =
+    `<span style="color:${ccol}">${cname}'S TURN</span>`;
+  document.getElementById('cd-line').textContent =
+    player.cooldown > 0 ? `⚔ CAPTURE COOLDOWN: ${player.cooldown}` : '';
+  document.getElementById('hint-line').textContent = hint;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Boot
+// ─────────────────────────────────────────────────────────────
+document.getElementById('play-again-btn').addEventListener('click', initGame);
+
+const rulesOverlay = document.getElementById('rules-overlay');
+document.getElementById('rules-btn').addEventListener('click', () => rulesOverlay.classList.add('open'));
+document.getElementById('rules-close-btn').addEventListener('click', () => rulesOverlay.classList.remove('open'));
+rulesOverlay.addEventListener('click', e => { if (e.target === rulesOverlay) rulesOverlay.classList.remove('open'); });
+
+initGame();
+</script>
+</body>
+</html>
