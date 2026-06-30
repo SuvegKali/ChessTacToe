@@ -848,10 +848,24 @@ function getMoves(piece, fr, fc, color) {
 function collinear(pos) {
   if (pos.length < 3) return false;
   const [a, b, c] = pos;
-  return (a.r === b.r && b.r === c.r) ||
-         (a.c === b.c && b.c === c.c) ||
-         ((a.r - a.c) === (b.r - b.c) && (b.r - b.c) === (c.r - c.c)) ||
-         ((a.r + a.c) === (b.r + b.c) && (b.r + b.c) === (c.r + c.c));
+
+  // Helper: given 3 positions on the same line, check they are consecutive
+  // (no gap). Sort by row then col, confirm each step is exactly (dr, dc).
+  function consecutive(dr, dc) {
+    const sorted = [a, b, c].slice().sort((p, q) =>
+      dr !== 0 ? p.r - q.r : p.c - q.c
+    );
+    return sorted[1].r - sorted[0].r === dr &&
+           sorted[1].c - sorted[0].c === dc &&
+           sorted[2].r - sorted[1].r === dr &&
+           sorted[2].c - sorted[1].c === dc;
+  }
+
+  if (a.r === b.r && b.r === c.r)                                     return consecutive(0, 1);
+  if (a.c === b.c && b.c === c.c)                                     return consecutive(1, 0);
+  if ((a.r-a.c) === (b.r-b.c) && (b.r-b.c) === (c.r-c.c))           return consecutive(1, 1);
+  if ((a.r+a.c) === (b.r+b.c) && (b.r+b.c) === (c.r+c.c))           return consecutive(1,-1);
+  return false;
 }
 
 function checkWin(pIdx) {
